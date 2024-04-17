@@ -1,2 +1,57 @@
 module PicoPower:
-    signal gnd
+    """
+    PicoPower is a power management module that includes:
+    - Battery interface
+    - Buck-boost converter
+    - LDO
+    - Charger
+    - Power switch
+
+    Specs:
+    - 1S lipo battery compatible
+    - 5V input
+    """
+    ################## Parameters ##################
+    v_out: voltage
+    charge_current: charge_current
+
+    # defaults
+    v_out = 3.3V +/- 10%
+    charge_current = 100mA +/- 10%
+
+    #################### External ##################
+    power_always_on = new Power
+    power_switched = new Power
+    power_usb = new Power
+    enable = new Pair
+
+
+    #################### Battery ###################
+    battery = new Battery
+
+    # Select battery type
+    battery -> Battery_JST
+    # battery -> Battery_18650
+
+    ################## Buck-boost ##################
+    buck_boost = new BuckBoost
+    buck_boost.v_in = v_in
+    buck_boost.v_out = v_out * 1.1
+
+    ##################### LDO ######################
+    ldo = new LDO
+    ldo.vout = v_out
+
+    ################# Power Switch #################
+    power_switch = new PowerSwitch
+
+
+    #################### Charger ###################
+    charger = new Charger
+    power_usb ~ charger.power_in
+    battery.power ~ charger.power_out
+
+
+
+
+

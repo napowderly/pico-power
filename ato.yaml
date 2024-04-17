@@ -3,4 +3,19 @@ builds:
   default:
     entry: elec/src/pico-power.ato:PicoPower
 dependencies:
-- generics
+- name: generics
+  version_spec: '@09ad6baeaab93d53b9b6c90069ac750f4161d76f'
+  link_broken: true
+  path: elec/src/generics
+- name: bq24045dsqr
+  version_spec: '@14ee74841ac8a1d311dd1050445bc6b4f300c6bf'
+  link_broken: true
+  path: elec/src/bq24045dsqr
+- name: ldk220m-r
+  version_spec: '@8dd936e3fa3773448ae44bc17e7412daf7bff4d7'
+  link_broken: true
+  path: elec/src/ldk220m-r
+- name: tps63020dsjr
+  version_spec: '@05e0eabdcf71388f020d9ddb3fca08726b19a664'
+  link_broken: true
+  path: elec/src/tps63020dsjr
