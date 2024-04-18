@@ -1,4 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "lib")(type "KiCad")(uri "/Users/narayanpowderly/Documents/atopile-workspace/pico-power/build/footprints/footprints.pretty")(options "")(descr ""))
-)
