@@ -1,0 +1,9 @@
+component TPNTR4101PT1G:
+    # component TPNTR4101PT1G
+    footprint = "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR"
+    lcsc_id = "C2959852"
+    # pins
+    signal S ~ pin 2
+    signal G ~ pin 1
+    signal D ~ pin 3
+

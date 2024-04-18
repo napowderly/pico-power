@@ -1,17 +1,6 @@
 import AdjustableLDO from "generics/regulators.ato"
 import Capacitor from "generics/capacitors.ato"
 
-module LDK220M_R_5V from LDK220M_R:
-    """Preconfigured for 5V output"""
-    feedback_div.r_top.value = 18kohm +/- 10%
-    feedback_div.r_bottom.value = 5.1kohm +/- 10%
-
-
-module LDK220M_R_3V3 from LDK220M_R:
-    """Preconfigured for 3.3V output"""
-    feedback_div.r_top.value = 18kohm +/- 10%
-    feedback_div.r_bottom.value = 10kohm +/- 10%
-
 component _LDK220M_R:
     # component LDK220M-R
     footprint = "SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL"
@@ -30,7 +19,6 @@ module LDK220M_R from AdjustableLDO:
     max 200mA output current and max 13.2V input voltage"""
     v_ref = 1.185V
     assert v_in within 2.5V to 13.2V
-    # Vo = Vadj * (1 + R1 / R2) = 1.185V * (1 + R1 / R2)
 
 
     ldo = new _LDK220M_R

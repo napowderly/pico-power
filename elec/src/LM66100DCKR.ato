@@ -1,0 +1,12 @@
+component LM66100DCKR:
+    # component LM66100DCKR
+    footprint = "SC-70-6_L2.0-W1.3-P0.65-LS2.1-BL"
+    lcsc_id = "C2869734"
+    # pins
+    signal VIN ~ pin 1
+    signal GND ~ pin 2
+    signal CE_hash ~ pin 3
+    signal NC ~ pin 4
+    signal ST ~ pin 5
+    signal VOUT ~ pin 6
+

@@ -1,3 +1,12 @@
+from "bq2404xdsqr/elec/src/bq2404xdsqr.ato" import BQ24040DSQR, BQ24045DSQR # charger
+from "tps63020dsjr/elec/src/tps63020dsjr.ato" import TPS63020DSJR # buck-boost
+from "ldk220m-r/elec/src/ldk220m-r.ato" import LDK220M_R # LDO
+from "batteries/batteries.ato" import Battery, Battery18650, BatteryJST
+from "generics/interfaces.ato" import Power, Pair
+from "generics/vdivs.ato" import SwitchedVDiv
+from "TPS22919DCKR.ato" import TPS22919DCKR
+
+
 module PicoPower:
     """
     PicoPower is a power management module that includes:
@@ -8,14 +17,12 @@ module PicoPower:
     - Power switch
 
     Specs:
-    - 1S lipo battery compatible
-    - 5V input
+    - 1S lipo battery compatible 4.2V or 4.35V
+    - 5V input (USB)
+    - 1.8V to 5V output (configurable)
     """
     ################## Parameters ##################
-    v_out: voltage
-    charge_current: charge_current
-
-    # defaults
+    # default parameters, override if needed
     v_out = 3.3V +/- 10%
     charge_current = 100mA +/- 10%
 
@@ -23,35 +30,52 @@ module PicoPower:
     power_always_on = new Power
     power_switched = new Power
     power_usb = new Power
-    enable = new Pair
+    power_switched_enable = new Pair
+    battery_sense = new Pair
+    battery_sense_enable = new Pair
+    charge_status = new Pair
 
 
     #################### Battery ###################
     battery = new Battery
+    battery_vdiv = new SwitchedVDiv
 
     # Select battery type
-    battery -> Battery_JST
-    # battery -> Battery_18650
+    battery -> BatteryJST
+    # battery -> Battery18650
+
+    # switched vdiv for battery voltage sensing
+    battery_vdiv.power ~ battery.power
+    battery_vdiv.enable ~ battery_sense_enable
+    battery_vdiv.output ~ battery_sense
 
     ################## Buck-boost ##################
-    buck_boost = new BuckBoost
-    buck_boost.v_in = v_in
-    buck_boost.v_out = v_out * 1.1
+    buck_boost = new TPS63020DSJR
+    buck_boost.v_in = 2.5V to 4.2V
+    buck_boost.v_out = 3.5V +/- 10%
+
+    battery.power ~ buck_boost.power_in
 
     ##################### LDO ######################
-    ldo = new LDO
-    ldo.vout = v_out
+    ldo = new LDK220M_R
+    ldo.v_out = 3.3V +/- 10%
+    ldo.v_in = 2.5V to 4.2V
+
+    buck_boost.power_out ~ ldo.power_in
+    ldo.power_out ~ power_always_on
 
     ################# Power Switch #################
-    power_switch = new PowerSwitch
+    power_switch = new TPS22919DCKR
+    ldo.power_out ~ power_switch.power_in
+    power_switch.power_out ~ power_switched
+    power_switched_enable ~ power_switch.enable
 
 
     #################### Charger ###################
-    charger = new Charger
+    charger = new BQ24040DSQR # for 4.2V batteries
+    # charger = new BQ24045DSQR # for 4.35V batteries
     power_usb ~ charger.power_in
-    battery.power ~ charger.power_out
-
-
-
+    battery.power ~ charger.power_batt
+    charge_status ~ charger.charge_status
 
 

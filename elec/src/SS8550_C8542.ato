@@ -1,0 +1,9 @@
+component SS8550_C8542:
+    # component SS8550_C8542
+    footprint = "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR"
+    lcsc_id = "C8542"
+    # pins
+    signal B ~ pin 1
+    signal E ~ pin 2
+    signal C ~ pin 3
+
