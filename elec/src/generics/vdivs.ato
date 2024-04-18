@@ -1,0 +1,103 @@
+import Resistor from "resistors.ato"
+import Capacitor from "capacitors.ato"
+import Power from "interfaces.ato"
+import Pair from "interfaces.ato"
+import PFET from "mosfets.ato"
+
+module VDiv from _VDiv:
+    r_total: resistance
+    # ratio: None
+    v_in: voltage
+    v_out: voltage
+    i_q: current
+
+    i_q = 100uA to 10mA
+
+    # assert r_top.value / r_bottom.value within ratio
+    # assert r_top.value + r_bottom.value within r_total
+    assert v_in * r_bottom.value / (r_top.value + r_bottom.value) within v_out
+    assert v_in / (r_bottom.value + r_top.value) within i_q
+
+
+module SwitchedVDiv:
+    """
+    VDiv with integrated p-fet to reduce quiescent current
+    """
+    power = new Power
+    output = new Pair
+    enable = new Pair
+
+    pfet = new PFET
+    sense_vdiv = new _VDiv
+    fet_vdiv = new _VDiv
+
+    # connect power through pfet and vdiv
+    pfet -> TPNTR4101PT1G
+    pfet.drain ~ power.vcc
+    pfet.source ~ sense_vdiv.top
+    sense_vdiv.bottom ~ power.gnd
+
+    output ~ sense_vdiv.output
+
+    # connect fet vdiv as pullup/current limiting resistor
+    fet_vdiv.top ~ power.vcc
+    enable.io ~ fet_vdiv.out
+    fet_vdiv.bottom ~ pfet.gate
+    fet_vdiv.r_top.value = 100kohm +/- 10%
+    fet_vdiv.r_bottom.value = 100ohm +/- 10%
+
+    r_total: resistance
+    v_in = 4.2V +/- 1%
+    v_out = 3.3V +/- 20%
+    i_q = 100uA to 10mA
+
+    # assertions
+    assert v_in * sense_vdiv.r_bottom.value / (sense_vdiv.r_top.value + sense_vdiv.r_bottom.value) within v_out
+    assert v_in / (sense_vdiv.r_bottom.value + sense_vdiv.r_top.value) within i_q
+
+
+module _VDiv:
+    signal top
+    signal out
+    signal bottom
+
+    output = new Pair
+    output.io ~ out
+    output.gnd ~ bottom
+
+    in = new Power # legacy
+    power = new Power
+    in ~ power
+    power.vcc ~ top
+    power.gnd ~ bottom
+
+    r_top = new Resistor
+    r_bottom = new Resistor
+    r_top.package = "0402"
+    r_bottom.package = "0402"
+
+    top ~ r_top.1; r_top.2 ~ r_bottom.1; r_bottom.2 ~ bottom
+    r_top.2 ~ out
+
+module VDivLowPassFilter from VDiv:
+    cap = new Capacitor
+    cap.package = "0402"
+    cutoff_frequency: frequency
+
+    out ~ cap.1; cap.2 ~ bottom
+    cap.value = 100nF +/- 10%
+
+    cutoff_frequency: frequency
+
+    assert 1 / (2 * 3.14 * r_top.value * cap.value) within cutoff_frequency
+
+
+component TPNTR4101PT1G from PFET:
+    # component TPNTR4101PT1G
+    footprint = "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR"
+    lcsc_id = "C2959852"
+    mpn = "C2959852"
+    # pins
+    source ~ pin 2
+    gate ~ pin 1
+    drain ~ pin 3

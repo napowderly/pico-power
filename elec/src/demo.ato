@@ -1,0 +1,62 @@
+# import parts
+from "pico-power.ato" import PicoPower
+from "rp2040/RP2040Kit.ato" import RP2040Kit
+from "sk6805-ec20/elec/src/sk6805-ec20.ato" import SK6805EC20
+from "usb-connectors/usb-connectors.ato" import USBCConn
+from "generics/buttons.ato" import ButtonPullup, ButtonSKRPACE010
+from "generics/leds.ato" import LEDIndicatorGreen
+from "batteries/batteries.ato" import BatteryJST
+
+module Demo:
+
+	# Create a new PicoPower instance
+	psu = new PicoPower
+
+	# configure psu
+	psu.v_out = 3.3V +/- 10%
+	psu.charge_current = 500mA +/- 10%
+	psu.battery -> BatteryJST
+
+	micro = new RP2040Kit
+	psu.power_always_on ~ micro.power
+	psu.power_switched_enable.io ~ micro.gpio0
+	psu.charge_status.io ~ micro.gpio1
+	psu.battery_sense_enable.io ~ micro.gpio3
+	psu.battery_sense.io ~ micro.gpio26_a0
+
+	micro.reset_btn.btn -> ButtonSKRPACE010
+	micro.boot_btn.btn -> ButtonSKRPACE010
+
+	wake_button = new ButtonPullup
+	wake_button.power ~ psu.power_always_on
+	wake_button.btn -> ButtonSKRPACE010
+	wake_button.output.io ~ micro.gpio10
+
+	# USB connector data to micro and power to PSU
+	usbc = new USBCConn
+	usbc.usb2 ~ micro.usb2
+	usbc.power ~ psu.power_usb
+
+	power_led = new LEDIndicatorGreen
+	power_led.v_in = 3.3V +/- 1%
+	power_led.power ~ psu.power_switched
+
+	led1 = new SK6805EC20
+	led1.power ~ psu.power_switched
+	led1.din.io ~ micro.gpio2
+
+	led2 = new SK6805EC20
+	led2.power ~ psu.power_switched
+	led1.dout ~ led2.din
+
+	led3 = new SK6805EC20
+	led3.power ~ psu.power_switched
+	led2.dout ~ led3.din
+
+	led4 = new SK6805EC20
+	led4.power ~ psu.power_switched
+	led3.dout ~ led4.din
+
+	led5 = new SK6805EC20
+	led5.power ~ psu.power_switched
+	led4.dout ~ led5.din
